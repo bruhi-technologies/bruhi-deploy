@@ -47,32 +47,112 @@ if [ ! -f .env ]; then
   
   echo ""
   echo "⚙️   Configuring environment variables..."
-  echo "    Press Enter to accept the default value shown in brackets."
   echo ""
   
+  # Parse default values from .env.example
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [[ ! "$line" =~ ^#.*$ ]] && [[ "$line" =~ = ]]; then
+      key=$(echo "$line" | cut -d= -f1)
+      val=$(echo "$line" | cut -d= -f2-)
+      declare "DEFAULT_$key=$val"
+    fi
+  done < .env.example
+
+  # 1. Ask for Docker Compose Profiles
+  read -p "    Use bundled Icecast server? (y/n) [y]: " use_icecast
+  read -p "    Use reverse proxy (Caddy) for automatic HTTPS? (y/n) [y]: " use_proxy
+
+  profiles=""
+  if [[ ! "$use_icecast" =~ ^[nN]$ ]]; then
+    profiles="bundled-icecast"
+  fi
+
+  is_proxy=true
+  if [[ "$use_proxy" =~ ^[nN]$ ]]; then
+    is_proxy=false
+  fi
+
+  if [ "$is_proxy" = true ]; then
+    if [ -n "$profiles" ]; then
+      profiles="$profiles,proxy"
+    else
+      profiles="proxy"
+    fi
+  fi
+
+  # 2. Ask for Port
+  default_port="${DEFAULT_PORT:-8000}"
+  read -p "    Port for the web interface [$default_port]: " user_port
+  PORT="${user_port:-$default_port}"
+
+  # 3. Ask for Domain / Server IP depending on proxy
+  if [ "$is_proxy" = true ]; then
+    default_domain="${DEFAULT_DOMAIN:-radio.yourdomain.com}"
+    while true; do
+      read -p "    Enter your domain name (e.g. radio.yourdomain.com) [$default_domain]: " user_domain
+      domain="${user_domain:-$default_domain}"
+      if [ -n "$domain" ]; then
+        break
+      fi
+    done
+    # Strip protocol (http:// or https://), port, and trailing path
+    domain=$(echo "$domain" | sed -e 's|^[^/]*//||' | cut -d/ -f1 | cut -d: -f1)
+    
+    DOMAIN="$domain"
+    BRUHI_URL="https://$domain"
+    BRUHI_RP_ID="$domain"
+  else
+    default_host="localhost"
+    read -p "    Enter your server IP or domain name [$default_host]: " user_host
+    host="${user_host:-$default_host}"
+    # Strip protocol, port, and trailing path
+    host=$(echo "$host" | sed -e 's|^[^/]*//||' | cut -d/ -f1 | cut -d: -f1)
+
+    DOMAIN=""
+    BRUHI_URL="http://$host:$PORT"
+    BRUHI_RP_ID="$host"
+  fi
+
+  # Write .env file preserving formatting and comments of .env.example
   > .env
-  
   while IFS= read -r line || [ -n "$line" ]; do
     if [[ "$line" =~ ^#.*$ ]] || [[ -z "$line" ]]; then
       echo "$line" >> .env
-    else
+    elif [[ "$line" =~ = ]]; then
       key=$(echo "$line" | cut -d= -f1)
-      default_val=$(echo "$line" | cut -d= -f2-)
       
-      read -p "    $key [$default_val]: " user_val
-      
-      if [ -z "$user_val" ]; then
-        echo "$key=$default_val" >> .env
+      if [ "$key" = "COMPOSE_PROFILES" ]; then
+        echo "COMPOSE_PROFILES=$profiles" >> .env
+      elif [ "$key" = "PORT" ]; then
+        echo "PORT=$PORT" >> .env
+      elif [ "$key" = "DOMAIN" ]; then
+        echo "DOMAIN=$DOMAIN" >> .env
+      elif [ "$key" = "BRUHI_URL" ]; then
+        echo "BRUHI_URL=$BRUHI_URL" >> .env
+      elif [ "$key" = "BRUHI_RP_ID" ]; then
+        echo "BRUHI_RP_ID=$BRUHI_RP_ID" >> .env
       else
-        echo "$key=$user_val" >> .env
+        # Copy the default value from .env.example
+        var_name="DEFAULT_$key"
+        val="${!var_name}"
+        echo "$key=$val" >> .env
       fi
+    else
+      echo "$line" >> .env
     fi
   done < .env.example
-  
+
   rm .env.example
 
   echo ""
-  echo "✅   Configuration saved to .env."
+  echo "✅  Configuration saved to .env:"
+  echo "    - Profiles:         $profiles"
+  echo "    - Port:             $PORT"
+  echo "    - Public URL:       $BRUHI_URL"
+  if [ -n "$DOMAIN" ]; then
+    echo "    - Domain:           $DOMAIN"
+  fi
+  echo "    - Passkey RP ID:    $BRUHI_RP_ID"
   echo ""
 else
   echo "ℹ️   .env already exists — skipping."
