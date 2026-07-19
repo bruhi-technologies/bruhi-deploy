@@ -34,16 +34,12 @@ Manage multiple radio stations from one place — schedule playlists, take live 
 bash <(curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/install.sh)
 ```
 
-Then edit the configuration:
-
-```bash
-cd ~/bruhi-cloud
-nano .env
-```
+The installer will guide you through the initial configuration and automatically generate your `.env` file.
 
 Start the stack:
 
 ```bash
+cd ~/bruhi-cloud
 docker compose up -d
 ```
 
@@ -60,9 +56,8 @@ All configuration is done via the `.env` file. Key settings:
 | `BRUHI_URL`        | Public URL of your instance   | —                 |
 | `DOMAIN`           | Domain name for HTTPS (Caddy) | —                 |
 | `COMPOSE_PROFILES` | Active services — see below   | `bundled-icecast` |
-| `ICECAST_HOST`     | Icecast hostname              | `icecast`         |
-| `S3_ENDPOINT_URL`  | S3-compatible storage URL     | _(local disk)_    |
-| `SMTP_HOST`        | SMTP server for email         | _(optional)_      |
+
+*(Note: Storage and Email settings are now configured directly within the Admin Dashboard UI.)*
 
 ### Profiles
 
@@ -70,7 +65,6 @@ All configuration is done via the `.env` file. Key settings:
 | ----------------- | --------------------------------- |
 | `bundled-icecast` | Starts a local Icecast container  |
 | `proxy`           | Starts Caddy with automatic HTTPS |
-| `s3-media`        | Starts a local MinIO S3 container |
 
 **Example — HTTPS with bundled Icecast:**
 
