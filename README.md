@@ -91,7 +91,7 @@ ghcr.io/bruhi-technologies/bruhi-cloud:latest
 Pinning to a specific version is recommended for production:
 
 ```
-ghcr.io/bruhi-technologies/bruhi-cloud:0.3.0
+ghcr.io/bruhi-technologies/bruhi-cloud:0.4.0
 ```
 
 ---
