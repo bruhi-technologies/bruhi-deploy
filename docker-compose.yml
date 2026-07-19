@@ -34,15 +34,16 @@ services:
       BRUHI_ENV:             "production"
       SESSION_COOKIE_SECURE: "true"
       CORS_ORIGINS:          "${CORS_ORIGINS:-}"
+      # Public URL of this instance (used for passkeys, invite links, etc.)
       BRUHI_URL:             "${BRUHI_URL}"
+      # WebAuthn / Passkeys — must match the domain users access the app on
       BRUHI_RP_ID:           "${BRUHI_RP_ID}"
       BRUHI_RP_NAME:         "${BRUHI_RP_NAME:-brūhi Cloud}"
+      # Storage paths
       BRUHI_DB:              "/app/data/bruhi.db"
       AUDIO_DIR:             "/app/audio_files"
+      # bruhi-audio Rust playout daemon (runs inside the same container)
       BRUHI_AUDIO_API:       "http://localhost:7700"
-      ICECAST_HOST:          "${ICECAST_HOST:-icecast}"
-      ICECAST_PORT:          "${ICECAST_PORT:-8000}"
-      ICECAST_PASSWORD:      "${ICECAST_PASSWORD}"
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -50,6 +51,12 @@ services:
       timeout: 10s
       retries: 3
 
+  # ── Caddy Reverse Proxy (HTTPS / Auto-SSL) ────────────────────────────────
+  # Activated when COMPOSE_PROFILES contains "proxy".
+  # Caddy auto-provisions and renews Let's Encrypt certificates.
+  # Required .env settings:
+  #   DOMAIN=radio.yourdomain.com
+  #   COMPOSE_PROFILES=bundled-icecast,proxy   (or proxy alone for external Icecast)
   caddy:
     profiles: ["proxy"]
     image: caddy:2-alpine
@@ -59,7 +66,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "443:443/udp"
+      - "443:443/udp"   # HTTP/3 (QUIC)
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -73,5 +80,5 @@ volumes:
   bruhi_playlists:
   bruhi_db:
   bruhi_audio_sockets:
-  caddy_data:
-  caddy_config:
+  caddy_data:     # Caddy certificate storage
+  caddy_config:   # Caddy internal config cache
