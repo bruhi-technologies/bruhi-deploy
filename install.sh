@@ -42,12 +42,37 @@ echo "⬇️   Downloading Caddyfile..."
 curl -fsSL "$DEPLOY_REPO/Caddyfile" -o Caddyfile
 
 if [ ! -f .env ]; then
-  echo "⬇️   Downloading .env.example → .env..."
-  curl -fsSL "$DEPLOY_REPO/.env.example" -o .env
+  echo "⬇️   Downloading .env.example..."
+  curl -fsSL "$DEPLOY_REPO/.env.example" -o .env.example
+  
   echo ""
-  echo "⚠️   A default .env file has been created."
-  echo "    Please edit it before starting brūhi Cloud:"
-  echo "    nano $INSTALL_DIR/.env"
+  echo "⚙️   Configuring environment variables..."
+  echo "    Press Enter to accept the default value shown in brackets."
+  echo ""
+  
+  > .env
+  
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [[ "$line" =~ ^#.*$ ]] || [[ -z "$line" ]]; then
+      echo "$line" >> .env
+    else
+      key=$(echo "$line" | cut -d= -f1)
+      default_val=$(echo "$line" | cut -d= -f2-)
+      
+      read -p "    $key [$default_val]: " user_val
+      
+      if [ -z "$user_val" ]; then
+        echo "$key=$default_val" >> .env
+      else
+        echo "$key=$user_val" >> .env
+      fi
+    fi
+  done < .env.example
+  
+  rm .env.example
+
+  echo ""
+  echo "✅   Configuration saved to .env."
   echo ""
 else
   echo "ℹ️   .env already exists — skipping."
@@ -62,7 +87,6 @@ echo ""
 echo "✅  brūhi Cloud is ready!"
 echo ""
 echo "   Next steps:"
-echo "   1. Edit your configuration:  nano $INSTALL_DIR/.env"
-echo "   2. Start the stack:          cd $INSTALL_DIR && docker compose up -d"
-echo "   3. Open in browser:          http://<your-server-ip>:8000"
+echo "   1. Start the stack:          cd $INSTALL_DIR && docker compose up -d"
+echo "   2. Open in browser:          http://<your-server-ip>:8000"
 echo ""
