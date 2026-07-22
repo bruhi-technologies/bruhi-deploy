@@ -60,24 +60,11 @@ if [ ! -f .env ]; then
 
   # 1. Ask for Docker Compose Profiles
   read -p "    Use bundled Icecast server? (y/n) [y]: " use_icecast
-  read -p "    Use reverse proxy (Caddy) for automatic HTTPS? (y/n) [y]: " use_proxy
 
-  profiles=""
   if [[ ! "$use_icecast" =~ ^[nN]$ ]]; then
-    profiles="bundled-icecast"
-  fi
-
-  is_proxy=true
-  if [[ "$use_proxy" =~ ^[nN]$ ]]; then
-    is_proxy=false
-  fi
-
-  if [ "$is_proxy" = true ]; then
-    if [ -n "$profiles" ]; then
-      profiles="$profiles,proxy"
-    else
-      profiles="proxy"
-    fi
+    profiles="bundled-icecast,proxy"
+  else
+    profiles="proxy"
   fi
 
   # 2. Ask for Port
@@ -85,33 +72,21 @@ if [ ! -f .env ]; then
   read -p "    Port for the web interface [$default_port]: " user_port
   PORT="${user_port:-$default_port}"
 
-  # 3. Ask for Domain / Server IP depending on proxy
-  if [ "$is_proxy" = true ]; then
-    default_domain="${DEFAULT_DOMAIN:-radio.yourdomain.com}"
-    while true; do
-      read -p "    Enter your domain name (e.g. radio.yourdomain.com) [$default_domain]: " user_domain
-      domain="${user_domain:-$default_domain}"
-      if [ -n "$domain" ]; then
-        break
-      fi
-    done
-    # Strip protocol (http:// or https://), port, and trailing path
-    domain=$(echo "$domain" | sed -e 's|^[^/]*//||' | cut -d/ -f1 | cut -d: -f1)
-    
-    DOMAIN="$domain"
-    BRUHI_URL="https://$domain"
-    BRUHI_RP_ID="$domain"
-  else
-    default_host="localhost"
-    read -p "    Enter your server IP or domain name [$default_host]: " user_host
-    host="${user_host:-$default_host}"
-    # Strip protocol, port, and trailing path
-    host=$(echo "$host" | sed -e 's|^[^/]*//||' | cut -d/ -f1 | cut -d: -f1)
-
-    DOMAIN=""
-    BRUHI_URL="http://$host:$PORT"
-    BRUHI_RP_ID="$host"
-  fi
+  # 3. Ask for Domain (HTTPS reverse proxy is mandatory)
+  default_domain="${DEFAULT_DOMAIN:-radio.yourdomain.com}"
+  while true; do
+    read -p "    Enter your domain name (e.g. radio.yourdomain.com) [$default_domain]: " user_domain
+    domain="${user_domain:-$default_domain}"
+    if [ -n "$domain" ]; then
+      break
+    fi
+  done
+  # Strip protocol (http:// or https://), port, and trailing path
+  domain=$(echo "$domain" | sed -e 's|^[^/]*//||' | cut -d/ -f1 | cut -d: -f1)
+  
+  DOMAIN="$domain"
+  BRUHI_URL="https://$domain"
+  BRUHI_RP_ID="$domain"
 
   # Write .env file preserving formatting and comments of .env.example
   > .env
@@ -149,9 +124,7 @@ if [ ! -f .env ]; then
   echo "    - Profiles:         $profiles"
   echo "    - Port:             $PORT"
   echo "    - Public URL:       $BRUHI_URL"
-  if [ -n "$DOMAIN" ]; then
-    echo "    - Domain:           $DOMAIN"
-  fi
+  echo "    - Domain:           $DOMAIN"
   echo "    - Passkey RP ID:    $BRUHI_RP_ID"
   echo ""
 else
@@ -168,5 +141,5 @@ echo "✅  brūhi Cloud is ready!"
 echo ""
 echo "   Next steps:"
 echo "   1. Start the stack:          cd $INSTALL_DIR && docker compose up -d"
-echo "   2. Open in browser:          http://<your-server-ip>:8000"
+echo "   2. Open in browser:          https://${DOMAIN:-<your-domain>}"
 echo ""
