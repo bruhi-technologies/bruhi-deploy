@@ -1,4 +1,15 @@
 {$DOMAIN} {
+    # Icecast stream mounts (bundled Icecast server)
+    @icecast {
+        path /station-* /stream* /live* /mount* *.mp3 *.opus *.aac *.ogg *.flac *.m3u *.pls *.xspf /status.xsl /status-json.xsl
+    }
+    reverse_proxy @icecast icecast:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
     # WebSocket support (used by brūhi Studio live controls)
     @websockets {
         header Connection *Upgrade*
