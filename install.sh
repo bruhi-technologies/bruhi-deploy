@@ -88,6 +88,11 @@ if [ ! -f .env ]; then
   BRUHI_URL="https://$domain"
   BRUHI_RP_ID="$domain"
 
+  # Auto-generate secure random internal passwords for Icecast
+  ICECAST_SOURCE_PASSWORD=$(openssl rand -hex 16 2>/dev/null || LC_ALL=C tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 32)
+  ICECAST_ADMIN_PASSWORD=$(openssl rand -hex 16 2>/dev/null || LC_ALL=C tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 32)
+  ICECAST_RELAY_PASSWORD=$(openssl rand -hex 16 2>/dev/null || LC_ALL=C tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 32)
+
   # Write .env file preserving formatting and comments of .env.example
   > .env
   while IFS= read -r line || [ -n "$line" ]; do
@@ -106,6 +111,12 @@ if [ ! -f .env ]; then
         echo "BRUHI_URL=$BRUHI_URL" >> .env
       elif [ "$key" = "BRUHI_RP_ID" ]; then
         echo "BRUHI_RP_ID=$BRUHI_RP_ID" >> .env
+      elif [ "$key" = "ICECAST_SOURCE_PASSWORD" ]; then
+        echo "ICECAST_SOURCE_PASSWORD=$ICECAST_SOURCE_PASSWORD" >> .env
+      elif [ "$key" = "ICECAST_ADMIN_PASSWORD" ]; then
+        echo "ICECAST_ADMIN_PASSWORD=$ICECAST_ADMIN_PASSWORD" >> .env
+      elif [ "$key" = "ICECAST_RELAY_PASSWORD" ]; then
+        echo "ICECAST_RELAY_PASSWORD=$ICECAST_RELAY_PASSWORD" >> .env
       else
         # Copy the default value from .env.example
         var_name="DEFAULT_$key"
@@ -116,6 +127,13 @@ if [ ! -f .env ]; then
       echo "$line" >> .env
     fi
   done < .env.example
+
+  # Append auto-generated Icecast credentials if not already written
+  if ! grep -q '^ICECAST_SOURCE_PASSWORD=' .env; then
+    echo "ICECAST_SOURCE_PASSWORD=$ICECAST_SOURCE_PASSWORD" >> .env
+    echo "ICECAST_ADMIN_PASSWORD=$ICECAST_ADMIN_PASSWORD" >> .env
+    echo "ICECAST_RELAY_PASSWORD=$ICECAST_RELAY_PASSWORD" >> .env
+  fi
 
   rm .env.example
 
