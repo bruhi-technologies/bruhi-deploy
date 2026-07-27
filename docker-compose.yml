@@ -34,6 +34,8 @@ services:
       BRUHI_ENV:             "production"
       SESSION_COOKIE_SECURE: "true"
       CORS_ORIGINS:          "${CORS_ORIGINS:-}"
+      # Set to "bundled" when using bundled Icecast so Station 1 is auto-created on license activation.
+      BRUHI_ICECAST_MODE:    "${BRUHI_ICECAST_MODE:-bundled}"
       # Public URL of this instance (used for passkeys, invite links, etc.)
       BRUHI_URL:             "${BRUHI_URL}"
       # WebAuthn / Passkeys — must match the domain users access the app on
