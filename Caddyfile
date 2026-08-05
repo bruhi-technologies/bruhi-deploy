@@ -1,7 +1,11 @@
 {$DOMAIN} {
     # Icecast stream mounts (bundled Icecast server)
+    # NOTE: *.mp3 glob intentionally removed — it would capture /api/media/*.mp3 requests
+    # and route them to Icecast (which returns 404). Icecast stream URLs are served via
+    # path prefixes (/station-*, /stream*, etc.) only.
     @icecast {
-        path /station-* /stream* /live* /mount* *.mp3 *.opus *.aac *.ogg *.flac *.m3u *.pls *.xspf /status.xsl /status-json.xsl
+        path /station-* /stream* /live* /mount* /status.xsl /status-json.xsl
+        not path /api/*
     }
     reverse_proxy @icecast icecast:8000 {
         header_up Host {host}
