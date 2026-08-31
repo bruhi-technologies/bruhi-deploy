@@ -149,7 +149,25 @@ else
   echo "ℹ️   .env already exists — skipping."
 fi
 
-# ── 4. Pull the image ─────────────────────────────────────────
+# ── 4. Configure system journal limits (prevents disk exhaustion) ─
+if command -v systemctl &>/dev/null && [ -d /run/systemd/system ]; then
+  SUDO=""
+  if [ "$EUID" -ne 0 ] && command -v sudo &>/dev/null; then
+    SUDO="sudo"
+  fi
+  if [ -n "$SUDO" ] || [ "$EUID" -eq 0 ]; then
+    if $SUDO mkdir -p /etc/systemd/journald.conf.d 2>/dev/null; then
+      cat << 'EOF' | $SUDO tee /etc/systemd/journald.conf.d/size.conf >/dev/null 2>&1 || true
+[Journal]
+SystemMaxUse=200M
+RuntimeMaxUse=50M
+EOF
+      $SUDO systemctl restart systemd-journald 2>/dev/null || true
+    fi
+  fi
+fi
+
+# ── 5. Pull the image ─────────────────────────────────────────
 echo "🐳  Pulling brūhi Cloud image from GHCR..."
 IMAGE=$(grep '^IMAGE=' .env | cut -d= -f2- | tr -d '"' || echo "ghcr.io/bruhi-technologies/bruhi-cloud:latest")
 docker pull "${IMAGE:-ghcr.io/bruhi-technologies/bruhi-cloud:latest}"
