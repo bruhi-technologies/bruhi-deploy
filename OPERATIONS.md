@@ -53,6 +53,7 @@ docker compose logs --tail=30 bruhi-cloud
 ```
 
 You should see near the bottom:
+
 ```
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000
@@ -73,8 +74,9 @@ curl http://localhost:8000/healthz
 ```
 
 Expected healthy response:
+
 ```json
-{"status": "ok"}
+{ "status": "ok" }
 ```
 
 ---
@@ -113,6 +115,7 @@ nano .env
 ```
 
 Ensure these three lines are present and uncommented:
+
 ```env
 ICECAST_SOURCE_PASSWORD=your_secure_password
 ICECAST_ADMIN_PASSWORD=your_secure_password
@@ -120,6 +123,7 @@ ICECAST_RELAY_PASSWORD=your_secure_password
 ```
 
 Or auto-generate secure passwords and append to `.env`:
+
 ```bash
 echo "ICECAST_SOURCE_PASSWORD=$(openssl rand -hex 16)" >> .env
 echo "ICECAST_ADMIN_PASSWORD=$(openssl rand -hex 16)" >> .env
@@ -127,6 +131,7 @@ echo "ICECAST_RELAY_PASSWORD=$(openssl rand -hex 16)" >> .env
 ```
 
 Then restart:
+
 ```bash
 docker compose up -d
 ```
@@ -138,6 +143,7 @@ docker compose up -d
 **Cause:** The `~/bruhi-cloud` directory on production servers is not a Git repo — it was created by `install.sh`, not `git clone`.
 
 **Fix:** Use `curl` to update files instead of `git pull`:
+
 ```bash
 cd ~/bruhi-cloud
 curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/docker-compose.yml -o docker-compose.yml
@@ -152,6 +158,7 @@ docker compose up -d
 **Cause:** Running `docker compose pull` or `docker compose up` before setting Icecast passwords in `.env`.
 
 **Fix:** Set the Icecast passwords in `.env` first (see above), then run:
+
 ```bash
 docker compose pull
 docker compose up -d
@@ -166,6 +173,7 @@ docker compose up -d
 **Fix:** Update to v0.10.1+ using the steps above. The new image includes a startup script that automatically corrects permissions.
 
 If already on v0.10.1+ and still seeing this error:
+
 ```bash
 docker compose exec bruhi-cloud chown -R bruhi:bruhi /tmp/bruhi-audio
 docker compose restart bruhi-cloud
@@ -185,12 +193,12 @@ docker compose ps
 
 Common causes and fixes:
 
-| Cause | Fix |
-|---|---|
-| Missing env variable | Check `.env` — add missing variable, then `docker compose up -d` |
-| Port 8000 already in use | Run `sudo lsof -i :8000`, change `PORT=` in `.env` |
-| Database corruption | See [Full Reset](#-full-reset--clean-install) |
-| Wrong image tag | Check `IMAGE=` in `.env`, run `docker compose pull` |
+| Cause                    | Fix                                                              |
+| ------------------------ | ---------------------------------------------------------------- |
+| Missing env variable     | Check `.env` — add missing variable, then `docker compose up -d` |
+| Port 8000 already in use | Run `sudo lsof -i :8000`, change `PORT=` in `.env`               |
+| Database corruption      | See [Full Reset](#-full-reset--clean-install)                    |
+| Wrong image tag          | Check `IMAGE=` in `.env`, run `docker compose pull`              |
 
 ---
 
@@ -224,9 +232,41 @@ curl http://localhost:8010/status.xsl
 ```
 
 Checklist:
+
 - `COMPOSE_PROFILES=bundled-icecast` is set in `.env`
 - `ICECAST_SOURCE_PASSWORD` in `.env` matches what's configured in **Admin → Stations → Outputs**
 - Port 8010 is open in your firewall / security group
+
+---
+
+### ❌ High CPU usage (~100%) or `rsyslogd` / `journald` spinning
+
+**Cause:** If the server disk reaches 100% full (or system logs grow uncontrolled), `rsyslogd` fails to write log messages with `No space left on device` and enters an infinite retry spin loop consuming ~100% CPU.
+
+**Fix:**
+
+```bash
+# 1. Check disk space and prune unused Docker data
+df -h
+docker system prune -a --volumes -f
+
+# 2. Vacuum old journal logs and configure permanent size caps
+sudo journalctl --vacuum-time=1d
+sudo mkdir -p /etc/systemd/journald.conf.d
+sudo tee /etc/systemd/journald.conf.d/size.conf > /dev/null << 'EOF'
+[Journal]
+SystemMaxUse=200M
+RuntimeMaxUse=50M
+EOF
+
+# 3. Restart logging daemons to stop the spinning process
+sudo systemctl restart systemd-journald
+sudo systemctl restart rsyslog
+
+# 4. Make sure docker-compose.yml has log rotation configured (included in latest release)
+curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/docker-compose.yml -o docker-compose.yml
+docker compose up -d
+```
 
 ---
 
@@ -235,12 +275,14 @@ Checklist:
 ### Changing Icecast Passwords
 
 1. Edit `.env`:
+
 ```bash
 cd ~/bruhi-cloud
 nano .env
 ```
 
 2. Change the password values:
+
 ```env
 ICECAST_SOURCE_PASSWORD=new_strong_password
 ICECAST_ADMIN_PASSWORD=new_strong_password
@@ -248,6 +290,7 @@ ICECAST_RELAY_PASSWORD=new_strong_password
 ```
 
 3. Restart to apply:
+
 ```bash
 docker compose up -d
 ```
@@ -268,11 +311,13 @@ docker compose exec bruhi-cloud python3 /app/server/reset_password.py admin@your
 ```
 
 Expected output:
+
 ```
 Success: Password for 'admin@yourdomain.com' reset successfully.
 ```
 
 If the email is wrong:
+
 ```
 Error: User with email 'wrong@email.com' not found.
 ```
@@ -282,6 +327,7 @@ Error: User with email 'wrong@email.com' not found.
 ### Option 2 — Pre-seed on first boot (fresh install / no users exist)
 
 If no users exist yet, add to `.env` before starting:
+
 ```env
 BRUHI_ADMIN_EMAIL=admin@yourdomain.com
 BRUHI_ADMIN_PASSWORD=your_new_password
@@ -328,6 +374,7 @@ docker compose up -d
 ```
 
 **To reset only the database (keep audio files):**
+
 ```bash
 cd ~/bruhi-cloud
 docker compose down
@@ -336,6 +383,7 @@ docker compose up -d
 ```
 
 **To keep everything but restart containers:**
+
 ```bash
 cd ~/bruhi-cloud
 docker compose restart
@@ -347,23 +395,23 @@ docker compose restart
 
 File location: `~/bruhi-cloud/.env`
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `COMPOSE_PROFILES` | ✅ | — | `bundled-icecast,proxy` or `proxy` |
-| `IMAGE` | ✅ | `latest` | Docker image tag to deploy |
-| `BRUHI_URL` | ✅ | — | Public URL e.g. `https://radio.yourdomain.com` |
-| `DOMAIN` | ✅ | — | Domain for Caddy auto-HTTPS |
-| `BRUHI_RP_ID` | ✅ | — | Hostname only (no https://) for passkeys |
-| `ICECAST_SOURCE_PASSWORD` | ✅ | — | Icecast source streaming password |
-| `ICECAST_ADMIN_PASSWORD` | ✅ | — | Icecast admin password |
-| `ICECAST_RELAY_PASSWORD` | ✅ | — | Icecast relay password |
-| `BRUHI_ICECAST_MODE` | ⬜ | `bundled` | `bundled` or `external` |
-| `BRUHI_ADMIN_EMAIL` | ⬜ | — | Seed owner email (first boot only, if no users exist) |
-| `BRUHI_ADMIN_PASSWORD` | ⬜ | — | Seed owner password (first boot only, if no users exist) |
-| `BRUHI_AUDIO_API_TOKEN` | ⬜ | auto-generated | Internal API token between Python and Rust audio engine |
-| `PORT` | ⬜ | `8000` | Host port for web UI |
-| `LOG_LEVEL` | ⬜ | `warning` | `debug` / `info` / `warning` / `error` |
-| `CORS_ORIGINS` | ⬜ | — | Space-separated extra allowed CORS origins |
+| Variable                  | Required | Default        | Description                                              |
+| ------------------------- | -------- | -------------- | -------------------------------------------------------- |
+| `COMPOSE_PROFILES`        | ✅       | —              | `bundled-icecast,proxy` or `proxy`                       |
+| `IMAGE`                   | ✅       | `latest`       | Docker image tag to deploy                               |
+| `BRUHI_URL`               | ✅       | —              | Public URL e.g. `https://radio.yourdomain.com`           |
+| `DOMAIN`                  | ✅       | —              | Domain for Caddy auto-HTTPS                              |
+| `BRUHI_RP_ID`             | ✅       | —              | Hostname only (no https://) for passkeys                 |
+| `ICECAST_SOURCE_PASSWORD` | ✅       | —              | Icecast source streaming password                        |
+| `ICECAST_ADMIN_PASSWORD`  | ✅       | —              | Icecast admin password                                   |
+| `ICECAST_RELAY_PASSWORD`  | ✅       | —              | Icecast relay password                                   |
+| `BRUHI_ICECAST_MODE`      | ⬜       | `bundled`      | `bundled` or `external`                                  |
+| `BRUHI_ADMIN_EMAIL`       | ⬜       | —              | Seed owner email (first boot only, if no users exist)    |
+| `BRUHI_ADMIN_PASSWORD`    | ⬜       | —              | Seed owner password (first boot only, if no users exist) |
+| `BRUHI_AUDIO_API_TOKEN`   | ⬜       | auto-generated | Internal API token between Python and Rust audio engine  |
+| `PORT`                    | ⬜       | `8000`         | Host port for web UI                                     |
+| `LOG_LEVEL`               | ⬜       | `warning`      | `debug` / `info` / `warning` / `error`                   |
+| `CORS_ORIGINS`            | ⬜       | —              | Space-separated extra allowed CORS origins               |
 
 ---
 
@@ -397,6 +445,6 @@ docker volume rm bruhi-cloud_bruhi_db      # delete only the database
 
 ---
 
-*Works identically on: AWS EC2, AWS Lightsail, DigitalOcean Droplets, Hetzner Cloud, Linode/Akamai, Vultr, Oracle Cloud Free Tier, or any Linux VPS with Docker installed.*
+_Works identically on: AWS EC2, AWS Lightsail, DigitalOcean Droplets, Hetzner Cloud, Linode/Akamai, Vultr, Oracle Cloud Free Tier, or any Linux VPS with Docker installed._
 
 **brūhi Technologies · [bruhi.in](https://bruhi.in)**
