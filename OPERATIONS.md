@@ -108,6 +108,7 @@ docker compose logs --tail=100 bruhi-cloud
 ## 🧹 Periodic Pruning & Disk Maintenance
 
 Over time, self-hosted Docker servers can run out of disk space due to:
+
 1. **Dangling Docker images**: Each time you update via `docker compose pull`, previous image layers remain cached on disk.
 2. **System journal logs (`journald`)**: Uncapped Linux OS logs can accumulate over months.
 
@@ -149,6 +150,7 @@ To keep the server automatically maintained, set up a weekly cron job that prune
 ```
 
 To verify the cron job is active:
+
 ```bash
 crontab -l
 ```
