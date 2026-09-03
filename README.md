@@ -57,7 +57,7 @@ All configuration is done via the `.env` file. Key settings:
 | `DOMAIN`           | Domain name for HTTPS (Caddy) | —                 |
 | `COMPOSE_PROFILES` | Active services — see below   | `bundled-icecast` |
 
-*(Note: Storage and Email settings are now configured directly within the Admin Dashboard UI.)*
+_(Note: Storage and Email settings are now configured directly within the Admin Dashboard UI.)_
 
 ### Profiles
 
