@@ -149,21 +149,25 @@ else
   echo "ℹ️   .env already exists — skipping."
 fi
 
-# ── 4. Configure system journal & Docker limits (prevents disk exhaustion) ─
-  SUDO=""
-  if [ "$EUID" -ne 0 ] && command -v sudo &>/dev/null; then
-    SUDO="sudo"
-  fi
-  if [ -n "$SUDO" ] || [ "$EUID" -eq 0 ]; then
-    if $SUDO mkdir -p /etc/systemd/journald.conf.d 2>/dev/null; then
-      cat << 'EOF' | $SUDO tee /etc/systemd/journald.conf.d/size.conf >/dev/null 2>&1 || true
+# ── 4. Configure system journal & periodic pruning limits ───────
+SUDO=""
+if [ "$EUID" -ne 0 ] && command -v sudo &>/dev/null; then
+  SUDO="sudo"
+fi
+if [ -n "$SUDO" ] || [ "$EUID" -eq 0 ]; then
+  if $SUDO mkdir -p /etc/systemd/journald.conf.d 2>/dev/null; then
+    cat << 'EOF' | $SUDO tee /etc/systemd/journald.conf.d/size.conf >/dev/null 2>&1 || true
 [Journal]
 SystemMaxUse=200M
 RuntimeMaxUse=50M
 EOF
-      $SUDO systemctl restart systemd-journald 2>/dev/null || true
-    fi
+    $SUDO systemctl restart systemd-journald 2>/dev/null || true
+  fi
+fi
 
+# Configure automated weekly docker image prune to prevent disk accumulation
+if command -v crontab &>/dev/null; then
+  (crontab -l 2>/dev/null | grep -v 'docker image prune'; echo "0 2 * * 0 docker image prune -f >/dev/null 2>&1") | crontab - 2>/dev/null || true
 fi
 
 # ── 5. Pull the image ─────────────────────────────────────────
