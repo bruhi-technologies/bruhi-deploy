@@ -41,6 +41,7 @@ services:
       CORS_ORIGINS:          "${CORS_ORIGINS:-}"
       ICECAST_SOURCE_PASSWORD: "${ICECAST_SOURCE_PASSWORD:-${ICECAST_PASSWORD:-}}"
       ICECAST_PASSWORD:        "${ICECAST_PASSWORD:-${ICECAST_SOURCE_PASSWORD:-}}"
+      ICECAST_HOST:            "${ICECAST_HOST:-icecast}"
       BRUHI_AUDIO_API_TOKEN:   "${BRUHI_AUDIO_API_TOKEN:-}"
       # Set to "bundled" when using bundled Icecast so Station 1 is auto-created on license activation.
       BRUHI_ICECAST_MODE:    "${BRUHI_ICECAST_MODE:-bundled}"
