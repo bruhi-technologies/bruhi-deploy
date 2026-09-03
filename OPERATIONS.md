@@ -9,12 +9,13 @@
 1. [Updating to the Latest Version](#-updating-to-the-latest-version)
 2. [Checking Server Status](#-checking-server-status)
 3. [Viewing Logs](#-viewing-logs)
-4. [Troubleshooting Common Errors](#-troubleshooting-common-errors)
-5. [Password Management](#-password-management)
-6. [Resetting the Admin Account](#-resetting-the-admin-account)
-7. [Full Reset / Clean Install](#-full-reset--clean-install)
-8. [Environment Variable Reference](#-environment-variable-reference)
-9. [Useful Commands Cheat Sheet](#-useful-commands-cheat-sheet)
+4. [Periodic Pruning & Disk Maintenance](#-periodic-pruning--disk-maintenance)
+5. [Troubleshooting Common Errors](#-troubleshooting-common-errors)
+6. [Password Management](#-password-management)
+7. [Resetting the Admin Account](#-resetting-the-admin-account)
+8. [Full Reset / Clean Install](#-full-reset--clean-install)
+9. [Environment Variable Reference](#-environment-variable-reference)
+10. [Useful Commands Cheat Sheet](#-useful-commands-cheat-sheet)
 
 ---
 
@@ -43,6 +44,9 @@ docker compose pull
 
 # Recreate and start containers (zero-downtime)
 docker compose up -d
+
+# Clean up dangling images from previous versions
+docker image prune -f
 ```
 
 ### Step 3 — Verify it Started Correctly
@@ -97,6 +101,74 @@ docker compose logs -f icecast
 
 # Last 100 lines (no follow)
 docker compose logs --tail=100 bruhi-cloud
+```
+
+---
+
+## 🧹 Periodic Pruning & Disk Maintenance
+
+Over time, self-hosted Docker servers can run out of disk space due to:
+1. **Dangling Docker images**: Each time you update via `docker compose pull`, previous image layers remain cached on disk.
+2. **System journal logs (`journald`)**: Uncapped Linux OS logs can accumulate over months.
+
+To prevent disk exhaustion, use the following maintenance practices.
+
+### 1. Check Current Disk Usage
+
+```bash
+# Check filesystem free space
+df -h
+
+# Check Docker disk allocation (images, containers, volumes, build cache)
+docker system df
+```
+
+### 2. Routine Pruning Commands
+
+Run these safely at any time (they will **never** delete your audio files or database):
+
+```bash
+# Remove dangling/untagged Docker images from previous updates
+docker image prune -f
+
+# Remove stopped containers and build cache (keeps volumes safe)
+docker system prune -f
+```
+
+> [!CAUTION]
+> **NEVER use `docker system prune --volumes` or `docker system prune -a --volumes` on production.**
+> The `--volumes` flag will delete persistent Docker volumes (including your database and uploaded audio files) if containers are temporarily stopped.
+
+### 3. Automated Weekly Pruning (Cron Job)
+
+To keep the server automatically maintained, set up a weekly cron job that prunes dangling images every Sunday at 2:00 AM:
+
+```bash
+# Add automated weekly image prune to crontab
+(crontab -l 2>/dev/null; echo "0 2 * * 0 docker image prune -f >/dev/null 2>&1") | crontab -
+```
+
+To verify the cron job is active:
+```bash
+crontab -l
+```
+
+### 4. Cap Linux System Journal Logs
+
+If your VPS root partition is still filling up, vacuum old systemd journal logs and set a permanent 200MB ceiling:
+
+```bash
+# Clean existing journal logs older than 7 days or larger than 200MB
+sudo journalctl --vacuum-size=200M
+
+# Enforce a permanent 200MB maximum in systemd configuration
+sudo mkdir -p /etc/systemd/journald.conf.d
+sudo tee /etc/systemd/journald.conf.d/size.conf << 'EOF'
+[Journal]
+SystemMaxUse=200M
+RuntimeMaxUse=50M
+EOF
+sudo systemctl restart systemd-journald
 ```
 
 ---
@@ -432,6 +504,13 @@ docker compose restart bruhi-cloud         # restart one service
 curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/docker-compose.yml -o docker-compose.yml
 docker compose pull
 docker compose up -d
+docker image prune -f                      # prune old image versions
+
+# ── Maintenance & Disk ─────────────────────────────────────────
+df -h                                      # check free disk space
+docker system df                           # check docker disk usage
+docker image prune -f                      # prune dangling images
+docker system prune -f                     # prune stopped containers & cache (safe)
 
 # ── Shell access ───────────────────────────────────────────────
 docker compose exec bruhi-cloud bash       # shell into container

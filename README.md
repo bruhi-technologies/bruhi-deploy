@@ -96,6 +96,7 @@ ghcr.io/bruhi-technologies/bruhi-cloud:0.4.0
 cd ~/bruhi-cloud
 docker compose pull
 docker compose up -d
+docker image prune -f
 ```
 
 ---
