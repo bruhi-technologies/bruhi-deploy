@@ -149,8 +149,7 @@ else
   echo "ℹ️   .env already exists — skipping."
 fi
 
-# ── 4. Configure system journal limits (prevents disk exhaustion) ─
-if command -v systemctl &>/dev/null && [ -d /run/systemd/system ]; then
+# ── 4. Configure system journal & Docker limits (prevents disk exhaustion) ─
   SUDO=""
   if [ "$EUID" -ne 0 ] && command -v sudo &>/dev/null; then
     SUDO="sudo"
@@ -164,7 +163,7 @@ RuntimeMaxUse=50M
 EOF
       $SUDO systemctl restart systemd-journald 2>/dev/null || true
     fi
-  fi
+
 fi
 
 # ── 5. Pull the image ─────────────────────────────────────────
