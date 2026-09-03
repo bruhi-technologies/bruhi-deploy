@@ -8,6 +8,7 @@
         not path /api/*
     }
     reverse_proxy @icecast icecast:8000 {
+        flush_interval -1
         header_up Host {host}
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}
@@ -28,6 +29,7 @@
 
     # All other requests
     reverse_proxy bruhi-cloud:8000 {
+        flush_interval -1
         header_up Host {host}
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}
