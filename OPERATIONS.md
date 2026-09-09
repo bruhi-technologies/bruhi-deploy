@@ -49,6 +49,25 @@ docker compose up -d
 docker image prune -f
 ```
 
+#### 💡 If Disk Space is Tight (< 2 GB Free Space)
+Docker downloads the new ~1.5 GB image *before* deleting the old one. If your server is tight on disk (e.g. on small 8 GB cloud instances with uploaded audio files), delete the old image first to free space before pulling:
+
+```bash
+cd ~/bruhi-cloud
+
+# 1. Stop containers (your database and audio files are preserved in volumes)
+docker compose down
+
+# 2. Remove the old image to immediately free 1.5 GB+ space
+docker rmi $(grep '^IMAGE=' .env 2>/dev/null | cut -d= -f2- | tr -d '"' || echo "ghcr.io/bruhi-technologies/bruhi-cloud:latest") 2>/dev/null || docker image prune -a -f
+
+# 3. Pull the new image with plenty of room
+docker compose pull
+
+# 4. Start the stack back up
+docker compose up -d
+```
+
 ### Step 3 — Verify it Started Correctly
 
 ```bash
