@@ -41,6 +41,11 @@ curl -fsSL "$DEPLOY_REPO/docker-compose.yml" -o docker-compose.yml
 echo "⬇️   Downloading Caddyfile..."
 curl -fsSL "$DEPLOY_REPO/Caddyfile" -o Caddyfile
 
+echo "⬇️   Downloading legal agreements & third-party notices..."
+curl -fsSL "$DEPLOY_REPO/LICENSE" -o LICENSE
+curl -fsSL "$DEPLOY_REPO/EULA.md" -o EULA.md
+curl -fsSL "$DEPLOY_REPO/THIRD_PARTY_LICENSES.md" -o THIRD_PARTY_LICENSES.md
+
 if [ ! -f .env ]; then
   echo "⬇️   Downloading .env.example..."
   curl -fsSL "$DEPLOY_REPO/.env.example" -o .env.example
