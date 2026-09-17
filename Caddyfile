@@ -1,10 +1,29 @@
 {$DOMAIN} {
+    # Live HLS Audio Delivery
+    # Reads from the shared hls_data volume mounted at /hls in both bruhi-cloud and caddy.
+    handle /hls/* {
+        root * /hls
+        file_server
+
+        header Access-Control-Allow-Origin *
+        header Access-Control-Allow-Methods "GET, OPTIONS"
+        header Access-Control-Allow-Headers "Range, Origin, Accept, Content-Type"
+
+        # Playlist — never cache (must always be fresh)
+        @m3u8 path *.m3u8
+        header @m3u8 Cache-Control "no-cache, no-store, must-revalidate"
+
+        # Segments — immutable (safe ONLY because epoch prefix prevents URL reuse)
+        @segments path *.mp3 *.ts *.m4s
+        header @segments Cache-Control "public, max-age=3600, immutable"
+    }
+
     # Icecast stream mounts (bundled Icecast server)
     # NOTE: *.mp3 glob intentionally removed — it would capture /api/media/*.mp3 requests
     # and route them to Icecast (which returns 404). Icecast stream URLs are served via
     # path prefixes (/station-*, /stream*, etc.) only.
     @icecast {
-        path /station-* /stream* /live* /mount* /status.xsl /status-json.xsl
+        path /station-* /stream* /mount* /status.xsl /status-json.xsl
         not path /api/*
     }
     reverse_proxy @icecast icecast:8000 {
