@@ -15,7 +15,8 @@
 7. [Resetting the Admin Account](#-resetting-the-admin-account)
 8. [Full Reset / Clean Install](#-full-reset--clean-install)
 9. [Environment Variable Reference](#-environment-variable-reference)
-10. [Useful Commands Cheat Sheet](#-useful-commands-cheat-sheet)
+10. [Native HLS Streaming & Optional CDN Setup](#-native-hls-streaming--optional-cdn-setup)
+11. [Useful Commands Cheat Sheet](#-useful-commands-cheat-sheet)
 
 ---
 
@@ -505,6 +506,27 @@ File location: `~/bruhi-cloud/.env`
 | `PORT`                    | ⬜       | `8000`         | Host port for web UI                                     |
 | `LOG_LEVEL`               | ⬜       | `warning`      | `debug` / `info` / `warning` / `error`                   |
 | `CORS_ORIGINS`            | ⬜       | —              | Space-separated extra allowed CORS origins               |
+| `HLS_DIR`                 | ⬜       | `/hls`         | Shared RAM directory (`tmpfs`) for live HLS streaming    |
+
+---
+
+## 📡 Native HLS Streaming & Optional CDN Setup
+
+brūhi includes a zero-latency **Native HLS Audio Output** engine that writes 4-second audio chunks directly to RAM (`tmpfs`), avoiding any SSD/disk wear.
+
+Because brūhi is 100% self-hosted, **you are never locked into any specific cloud provider or CDN**. You choose how to stream:
+
+### 1. Direct VPS (Zero-CDN / Default)
+No extra configuration needed. Caddy serves `/hls/*` directly from memory with automated CORS and RFC 9111 HTTP caching headers. A standard single VPS can easily handle 500+ concurrent listeners.
+
+### 2. Optional CDN Caching (Cloudflare, AWS CloudFront, BunnyCDN, Fastly)
+When you want to scale to tens or hundreds of thousands of listeners without increasing server bandwidth, place your preferred CDN in front of your domain.
+
+Configure two simple edge caching rules:
+- **Playlists (`*.m3u8`):** **BYPASS CACHE** (Do not cache; updates every 4 seconds).
+- **Segments (`*.mp3`):** **CACHE EVERYTHING** (Edge TTL = 1 hour to 1 month; immutable audio segments).
+
+For detailed step-by-step guides for Cloudflare, AWS CloudFront, BunnyCDN, and custom Nginx reverse proxies, refer to the [HLS Streaming & CDN Guide](https://github.com/bruhi-technologies/bruhi-cloud/blob/main/docs/HLS_STREAMING_AND_CDN_GUIDE.md).
 
 ---
 
