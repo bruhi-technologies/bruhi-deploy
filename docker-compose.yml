@@ -33,6 +33,7 @@ services:
       - bruhi_playlists:/tmp/liquidsoap-playlists
       - bruhi_db:/app/data
       - bruhi_audio_sockets:/tmp/bruhi-audio
+      - hls_data:/hls
     environment:
       PORT:                  "${PORT:-8000}"
       LOG_LEVEL:             "${LOG_LEVEL:-warning}"
@@ -45,6 +46,7 @@ services:
       BRUHI_AUDIO_API_TOKEN:   "${BRUHI_AUDIO_API_TOKEN:-}"
       # Set to "bundled" when using bundled Icecast so Station 1 is auto-created on license activation.
       BRUHI_ICECAST_MODE:    "${BRUHI_ICECAST_MODE:-bundled}"
+      HLS_DIR:               "/hls"
       # Public URL of this instance (used for passkeys, invite links, etc.)
       BRUHI_URL:             "${BRUHI_URL}"
       # WebAuthn / Passkeys — must match the domain users access the app on
@@ -87,6 +89,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+      - hls_data:/hls:ro
     environment:
       DOMAIN: "${DOMAIN:-localhost}"
     restart: always
@@ -103,3 +106,8 @@ volumes:
   bruhi_audio_sockets:
   caddy_data:     # Caddy certificate storage
   caddy_config:   # Caddy internal config cache
+  hls_data:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "size=256m,mode=0777"
