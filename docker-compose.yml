@@ -30,7 +30,7 @@ services:
       - "${PORT:-8000}:8000"
     volumes:
       - bruhi_audio:/app/audio_files
-      - bruhi_playlists:/tmp/liquidsoap-playlists
+      - bruhi_playlists:/tmp/bruhi-playlists
       - bruhi_db:/app/data
       - bruhi_audio_sockets:/tmp/bruhi-audio
       - hls_data:/hls
