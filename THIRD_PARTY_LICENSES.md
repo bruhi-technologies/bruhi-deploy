@@ -6,7 +6,7 @@ brūhi Cloud incorporates, bundles, or interoperates with several third-party op
 
 ## Table of Contents
 
-1. [Bundled Audio Streaming Server (Icecast) — GPLv2](#1-bundled-audio-streaming-server-icecast--gplv2)
+1. [External Audio Streaming Server (Icecast) Interoperability](#1-external-audio-streaming-server-icecast-interoperability)
 2. [Audio Processing & Encoding Libraries (LGPL & MPL)](#2-audio-processing--encoding-libraries-lgpl--mpl)
 3. [Rust Audio Engine Dependencies](#3-rust-audio-engine-dependencies)
 4. [Python Server Dependencies](#4-python-server-dependencies)
@@ -16,27 +16,16 @@ brūhi Cloud incorporates, bundles, or interoperates with several third-party op
 
 ---
 
-## 1. Bundled Audio Streaming Server (Icecast) — GPLv2
+## 1. External Audio Streaming Server (Icecast) Interoperability
 
-The brūhi Cloud Docker distribution references and interoperates with the **Icecast** streaming media server (`libretime/icecast:2.5.0-alpine`).
+brūhi Cloud includes client-side network capabilities to syndicate outbound audio streams to external **Icecast** servers over standard HTTP/TCP sockets.
 
 - **Project:** Icecast Server
 - **Copyright:** © 1999–2024 Jack Moffitt, Michael Smith, Karl Heyes, and Xiph.Org Foundation contributors
 - **License:** GNU General Public License version 2 (GPLv2)
 - **Upstream Source Repository:** [https://gitlab.xiph.org/xiph/icecast-server](https://gitlab.xiph.org/xiph/icecast-server)
-- **Container Build Source:** [https://github.com/libretime/icecast](https://github.com/libretime/icecast)
 
-### Source Code Offer & Availability (GPLv2 Section 3)
-Under the terms of the GNU General Public License version 2, anyone may obtain the complete, machine-readable source code of the exact Icecast server software distributed or bundled with brūhi Cloud. 
-
-Source code archives may be downloaded directly from the official upstream repository above, or by sending a written request to:
-```
-Bruhi Technologies — Open Source Compliance
-Email: info@bruhi.in
-Subject: GPL Source Request - Icecast
-```
-
-*Note on Architecture:* In brūhi Cloud, Icecast runs in an isolated network container process communicating exclusively via standard TCP network sockets (port 8000/8010). Under applicable copyright law, arms-length network socket communication does not extend copyleft obligations to brūhi Cloud's proprietary audio engine or business logic.
+*Note on Architecture:* brūhi Cloud does not bundle, build, or distribute Icecast server binaries or containers. Native HLS audio generation is handled internally. Outbound Icecast syndication functions strictly as an independent network client connecting over standard TCP sockets. Under copyright law, arms-length network socket client communication does not extend copyleft obligations to brūhi Cloud's proprietary audio engine or business logic.
 
 ---
 

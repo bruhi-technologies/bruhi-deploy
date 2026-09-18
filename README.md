@@ -2,7 +2,7 @@
 
 **Self-hosted radio automation & streaming platform.**
 
-Manage multiple radio stations from one place — schedule playlists, take live shows via browser, and stream to your audience via Icecast. Everything runs in a single Docker container.
+Manage multiple radio stations from one place — schedule playlists, take live shows via browser, and stream to your audience via Native HLS and outbound syndication. Everything runs in a single Docker container.
 
 ---
 
@@ -11,7 +11,7 @@ Manage multiple radio stations from one place — schedule playlists, take live 
 - 🎚️ **Multi-station management** — Independent stations, each with their own streams, schedule, and settings
 - 🔴 **Live broadcasting** — WebRTC browser-to-air with low latency
 - 🎵 **Automated playlists** — Upload audio, build playlists, schedule by time slot
-- 📻 **Broadcasting outputs** — Stream directly to Icecast (bundled), Shoutcast, HLS, or RTP/UDP endpoints.
+- 📻 **Broadcasting outputs** — Native HLS streaming out-of-the-box with zero credentials, plus outbound syndication to Icecast, Shoutcast, or RTP/UDP endpoints.
 - 📁 **Media library** — Upload, organise, and manage all your audio files
 - 🔁 **Smart fallback** — Automatic source switching: Live → Scheduled → Silence
 - 🔒 **Passkey authentication** — Passwordless login via WebAuthn
@@ -43,7 +43,7 @@ cd ~/bruhi-cloud
 docker compose up -d
 ```
 
-Open **http://<your-server-ip>:8000** (or your domain if using HTTPS).
+Open **https://your-domain.com** (or **http://<your-server-ip>:8000** if running standalone without Caddy).
 
 ---
 
@@ -51,25 +51,24 @@ Open **http://<your-server-ip>:8000** (or your domain if using HTTPS).
 
 All configuration is done via the `.env` file. Key settings:
 
-| Variable           | Description                   | Default           |
-| ------------------ | ----------------------------- | ----------------- |
-| `BRUHI_URL`        | Public URL of your instance   | —                 |
-| `DOMAIN`           | Domain name for HTTPS (Caddy) | —                 |
-| `COMPOSE_PROFILES` | Active services — see below   | `bundled-icecast` |
+| Variable           | Description                   | Default        |
+| ------------------ | ----------------------------- | -------------- |
+| `BRUHI_URL`        | Public URL of your instance   | —              |
+| `DOMAIN`           | Domain name for HTTPS (Caddy) | —              |
+| `COMPOSE_PROFILES` | Active services — see below   | `proxy`        |
 
-_(Note: Storage and Email settings are now configured directly within the Admin Dashboard UI.)_
+_(Note: Storage and Email settings are configured directly within the Admin Dashboard UI.)_
 
 ### Profiles
 
-| Profile           | What it does                      |
-| ----------------- | --------------------------------- |
-| `bundled-icecast` | Starts a local Icecast container  |
-| `proxy`           | Starts Caddy with automatic HTTPS |
+| Profile   | What it does                      |
+| --------- | --------------------------------- |
+| `proxy`   | Starts Caddy with automatic HTTPS |
 
-**Example — HTTPS with bundled Icecast:**
+**Example — Production HTTPS with Caddy:**
 
 ```
-COMPOSE_PROFILES=bundled-icecast,proxy
+COMPOSE_PROFILES=proxy
 DOMAIN=radio.yourdomain.com
 BRUHI_URL=https://radio.yourdomain.com
 ```
@@ -103,14 +102,14 @@ docker image prune -f
 
 ## 🏗️ Stack
 
-| Component       | Technology                   |
-| --------------- | ---------------------------- |
-| API & UI server | Python / FastAPI + SvelteKit |
-| Audio engine    | Rust (bruhi-audio)           |
-| Streaming       | Icecast 2                    |
-| Reverse proxy   | Caddy 2                      |
-| Database        | SQLite                       |
-| Object storage  | S3-compatible (optional)     |
+| Component       | Technology                                 |
+| --------------- | ------------------------------------------ |
+| API & UI server | Python / FastAPI + SvelteKit               |
+| Audio engine    | Rust (bruhi-audio)                         |
+| Streaming       | Native HLS + Icecast/Shoutcast syndication |
+| Reverse proxy   | Caddy 2                                    |
+| Database        | SQLite                                     |
+| Object storage  | S3-compatible (optional)                   |
 
 ---
 
