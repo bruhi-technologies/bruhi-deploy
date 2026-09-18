@@ -116,9 +116,6 @@ docker compose logs -f
 # Only the brūhi API + audio engine
 docker compose logs -f bruhi-cloud
 
-# Only Icecast
-docker compose logs -f icecast
-
 # Last 100 lines (no follow)
 docker compose logs --tail=100 bruhi-cloud
 ```
@@ -197,41 +194,6 @@ sudo systemctl restart systemd-journald
 
 ## 🚨 Troubleshooting Common Errors
 
-### ❌ Error: `ICECAST_SOURCE_PASSWORD must be explicitly configured in production mode`
-
-**Cause:** `ICECAST_SOURCE_PASSWORD` is missing or commented out in your `.env` file, and the app is running in production mode.
-
-**Fix:**
-
-```bash
-cd ~/bruhi-cloud
-nano .env
-```
-
-Ensure these three lines are present and uncommented:
-
-```env
-ICECAST_SOURCE_PASSWORD=your_secure_password
-ICECAST_ADMIN_PASSWORD=your_secure_password
-ICECAST_RELAY_PASSWORD=your_secure_password
-```
-
-Or auto-generate secure passwords and append to `.env`:
-
-```bash
-echo "ICECAST_SOURCE_PASSWORD=$(openssl rand -hex 16)" >> .env
-echo "ICECAST_ADMIN_PASSWORD=$(openssl rand -hex 16)" >> .env
-echo "ICECAST_RELAY_PASSWORD=$(openssl rand -hex 16)" >> .env
-```
-
-Then restart:
-
-```bash
-docker compose up -d
-```
-
----
-
 ### ❌ Error: `fatal: not a git repository`
 
 **Cause:** The `~/bruhi-cloud` directory on production servers is not a Git repo — it was created by `install.sh`, not `git clone`.
@@ -241,19 +203,6 @@ docker compose up -d
 ```bash
 cd ~/bruhi-cloud
 curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/docker-compose.yml -o docker-compose.yml
-docker compose pull
-docker compose up -d
-```
-
----
-
-### ❌ Error: `error while interpolating...ICECAST_SOURCE_PASSWORD: required variable is missing`
-
-**Cause:** Running `docker compose pull` or `docker compose up` before setting Icecast passwords in `.env`.
-
-**Fix:** Set the Icecast passwords in `.env` first (see above), then run:
-
-```bash
 docker compose pull
 docker compose up -d
 ```
@@ -315,21 +264,18 @@ sudo ufw allow 8000/tcp
 
 ---
 
-### ❌ Icecast stream not working
+### ❌ External Output / Stream Syndication not connecting
 
 ```bash
-# Check icecast container logs
-docker compose logs icecast
-
-# Verify icecast is responding
-curl http://localhost:8010/status.xsl
+# Check the brūhi audio engine logs
+docker compose logs -f bruhi-cloud
 ```
 
 Checklist:
 
-- `COMPOSE_PROFILES=bundled-icecast` is set in `.env`
-- `ICECAST_SOURCE_PASSWORD` in `.env` matches what's configured in **Admin → Stations → Outputs**
-- Port 8010 is open in your firewall / security group
+- Verify remote server hostname, port, mount point, and password in **Studio → Broadcast Outputs**
+- Ensure the remote destination server is online and accepting connections
+- Test reachability from your host: `nc -zv <remote-host> <remote-port>`
 
 ---
 
@@ -361,35 +307,6 @@ sudo systemctl restart rsyslog
 curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/docker-compose.yml -o docker-compose.yml
 docker compose up -d
 ```
-
----
-
-## 🔐 Password Management
-
-### Changing Icecast Passwords
-
-1. Edit `.env`:
-
-```bash
-cd ~/bruhi-cloud
-nano .env
-```
-
-2. Change the password values:
-
-```env
-ICECAST_SOURCE_PASSWORD=new_strong_password
-ICECAST_ADMIN_PASSWORD=new_strong_password
-ICECAST_RELAY_PASSWORD=new_strong_password
-```
-
-3. Restart to apply:
-
-```bash
-docker compose up -d
-```
-
-> ⚠️ After changing `ICECAST_SOURCE_PASSWORD`, update any broadcast outputs in the brūhi UI via **Admin → Stations → Outputs** to use the new password.
 
 ---
 
@@ -491,15 +408,11 @@ File location: `~/bruhi-cloud/.env`
 
 | Variable                  | Required | Default        | Description                                              |
 | ------------------------- | -------- | -------------- | -------------------------------------------------------- |
-| `COMPOSE_PROFILES`        | ✅       | —              | `bundled-icecast,proxy` or `proxy`                       |
+| `COMPOSE_PROFILES`        | ✅       | `proxy`        | `proxy` (Starts Caddy with auto-HTTPS)                   |
 | `IMAGE`                   | ✅       | `latest`       | Docker image tag to deploy                               |
 | `BRUHI_URL`               | ✅       | —              | Public URL e.g. `https://radio.yourdomain.com`           |
 | `DOMAIN`                  | ✅       | —              | Domain for Caddy auto-HTTPS                              |
 | `BRUHI_RP_ID`             | ✅       | —              | Hostname only (no https://) for passkeys                 |
-| `ICECAST_SOURCE_PASSWORD` | ✅       | —              | Icecast source streaming password                        |
-| `ICECAST_ADMIN_PASSWORD`  | ✅       | —              | Icecast admin password                                   |
-| `ICECAST_RELAY_PASSWORD`  | ✅       | —              | Icecast relay password                                   |
-| `BRUHI_ICECAST_MODE`      | ⬜       | `bundled`      | `bundled` or `external`                                  |
 | `BRUHI_ADMIN_EMAIL`       | ⬜       | —              | Seed owner email (first boot only, if no users exist)    |
 | `BRUHI_ADMIN_PASSWORD`    | ⬜       | —              | Seed owner password (first boot only, if no users exist) |
 | `BRUHI_AUDIO_API_TOKEN`   | ⬜       | auto-generated | Internal API token between Python and Rust audio engine  |

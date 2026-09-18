@@ -63,14 +63,7 @@ if [ ! -f .env ]; then
     fi
   done < .env.example
 
-  # 1. Ask for Docker Compose Profiles
-  read -p "    Use bundled Icecast server? (y/n) [y]: " use_icecast
-
-  if [[ ! "$use_icecast" =~ ^[nN]$ ]]; then
-    profiles="bundled-icecast,proxy"
-  else
-    profiles="proxy"
-  fi
+  profiles="proxy"
 
   # 2. Ask for Port
   default_port="${DEFAULT_PORT:-8000}"
@@ -93,10 +86,7 @@ if [ ! -f .env ]; then
   BRUHI_URL="https://$domain"
   BRUHI_RP_ID="$domain"
 
-  # Auto-generate secure random internal passwords for Icecast
-  ICECAST_SOURCE_PASSWORD=$(openssl rand -hex 16 2>/dev/null || LC_ALL=C tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 32)
-  ICECAST_ADMIN_PASSWORD=$(openssl rand -hex 16 2>/dev/null || LC_ALL=C tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 32)
-  ICECAST_RELAY_PASSWORD=$(openssl rand -hex 16 2>/dev/null || LC_ALL=C tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 32)
+
 
   # Write .env file preserving formatting and comments of .env.example
   > .env
@@ -116,12 +106,7 @@ if [ ! -f .env ]; then
         echo "BRUHI_URL=$BRUHI_URL" >> .env
       elif [ "$key" = "BRUHI_RP_ID" ]; then
         echo "BRUHI_RP_ID=$BRUHI_RP_ID" >> .env
-      elif [ "$key" = "ICECAST_SOURCE_PASSWORD" ]; then
-        echo "ICECAST_SOURCE_PASSWORD=$ICECAST_SOURCE_PASSWORD" >> .env
-      elif [ "$key" = "ICECAST_ADMIN_PASSWORD" ]; then
-        echo "ICECAST_ADMIN_PASSWORD=$ICECAST_ADMIN_PASSWORD" >> .env
-      elif [ "$key" = "ICECAST_RELAY_PASSWORD" ]; then
-        echo "ICECAST_RELAY_PASSWORD=$ICECAST_RELAY_PASSWORD" >> .env
+
       else
         # Copy the default value from .env.example
         var_name="DEFAULT_$key"
@@ -133,12 +118,7 @@ if [ ! -f .env ]; then
     fi
   done < .env.example
 
-  # Append auto-generated Icecast credentials if not already written
-  if ! grep -q '^ICECAST_SOURCE_PASSWORD=' .env; then
-    echo "ICECAST_SOURCE_PASSWORD=$ICECAST_SOURCE_PASSWORD" >> .env
-    echo "ICECAST_ADMIN_PASSWORD=$ICECAST_ADMIN_PASSWORD" >> .env
-    echo "ICECAST_RELAY_PASSWORD=$ICECAST_RELAY_PASSWORD" >> .env
-  fi
+
 
   rm .env.example
 
