@@ -1,7 +1,7 @@
 {$DOMAIN} {
     # Live HLS Audio Delivery
     # Reads from the shared hls_data volume mounted at /hls in both bruhi-cloud and caddy.
-    handle /hls/* {
+    handle_path /hls/* {
         root * /hls
         file_server
 
