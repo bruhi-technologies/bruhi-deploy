@@ -78,6 +78,10 @@ The `bruhi-audio` engine utilizes the following open-source crates:
 | `async-stream` | MIT | © Tokio Contributors |
 | `futures-core` | MIT / Apache-2.0 | © Rust Futures Contributors |
 | `notify` | CC0-1.0 / Apache-2.0 | © Félix Saparelli and contributors |
+| `symphonia-adapter-libopus` | MIT / Apache-2.0 | © Aaron Schey and contributors |
+| `opus` | MIT / Apache-2.0 | © SpaceManiac and audiopus contributors |
+| `uuid` | MIT / Apache-2.0 | © UUID Contributors |
+| `libc` | MIT / Apache-2.0 | © The Rust Project Developers |
 
 ---
 
