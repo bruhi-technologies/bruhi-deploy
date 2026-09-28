@@ -29,6 +29,7 @@ services:
       # bruhi-audio Rust playout daemon (runs inside the same container)
       BRUHI_AUDIO_API:       "http://localhost:7700"
     restart: always
+    mem_limit: 700m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
       interval: 60s
@@ -81,4 +82,5 @@ volumes:
     driver_opts:
       type: tmpfs
       device: tmpfs
-      o: "size=256m,mode=0777"
+      o: "size=256m,mode=0755"
+

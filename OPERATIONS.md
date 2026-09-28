@@ -462,6 +462,12 @@ docker compose pull
 docker compose up -d
 docker image prune -f                      # prune old image versions
 
+# ── Low-Memory Hosts (512MB – 1GB RAM) ─────────────────────────
+free -h                                    # check RAM & swap status
+# If swap is 0B on micro VPS instances, configure a 1GB swapfile to prevent kernel OOM:
+# sudo fallocate -l 1G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+# echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
 # ── Maintenance & Disk ─────────────────────────────────────────
 df -h                                      # check free disk space
 docker system df                           # check docker disk usage

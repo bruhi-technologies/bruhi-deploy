@@ -1,3 +1,11 @@
+# bruhi Cloud — Caddyfile
+#
+# Activated by setting DOMAIN=your-domain.com and COMPOSE_PROFILES=proxy
+# in your .env file before running `docker compose up`.
+#
+# Caddy automatically provisions and renews SSL certificates from Let's
+# Encrypt — no manual certificate management required.
+
 {$DOMAIN} {
     # Live HLS Audio Delivery
     # Reads from the shared hls_data volume mounted at /hls in both bruhi-cloud and caddy.
@@ -18,7 +26,7 @@
         header @segments Cache-Control "public, max-age=3600, immutable"
     }
 
-    # WebSocket support (used by brūhi Studio live controls)
+    # WebSocket support (used by bruhi Studio live controls)
     @websockets {
         header Connection *Upgrade*
         header Upgrade websocket
@@ -33,6 +41,8 @@
     # All other requests
     reverse_proxy bruhi-cloud:8000 {
         flush_interval -1
+        lb_try_duration 10s
+        lb_try_interval 500ms
         header_up Host {host}
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}
