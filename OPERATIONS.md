@@ -26,13 +26,14 @@
 
 The `~/bruhi-cloud` directory on production servers is **not a Git repository** — it was created by the install script. You need to manually refresh configuration files when updating.
 
-### Step 1 — Update `docker-compose.yml`
+### Step 1 — Update `docker-compose.yml` & `Caddyfile`
 
 ```bash
 cd ~/bruhi-cloud
 
-# Download the latest docker-compose.yml from the deploy repo
+# Download the latest docker-compose.yml and Caddyfile from the deploy repo
 curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/docker-compose.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/Caddyfile -o Caddyfile
 ```
 
 ### Step 2 — Pull and Deploy the New Image
@@ -45,6 +46,9 @@ docker compose pull
 
 # Recreate and start containers (zero-downtime)
 docker compose up -d
+
+# Reload/restart Caddy to pick up Caddyfile changes
+docker compose restart caddy
 
 # Clean up dangling images from previous versions
 docker image prune -f
@@ -203,6 +207,7 @@ sudo systemctl restart systemd-journald
 ```bash
 cd ~/bruhi-cloud
 curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/docker-compose.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/Caddyfile -o Caddyfile
 docker compose pull
 docker compose up -d
 ```
@@ -458,8 +463,10 @@ docker compose restart bruhi-cloud         # restart one service
 
 # ── Update ─────────────────────────────────────────────────────
 curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/docker-compose.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/bruhi-technologies/bruhi-deploy/main/Caddyfile -o Caddyfile
 docker compose pull
 docker compose up -d
+docker compose restart caddy               # apply Caddyfile changes
 docker image prune -f                      # prune old image versions
 
 # ── Low-Memory Hosts (512MB – 1GB RAM) ─────────────────────────
