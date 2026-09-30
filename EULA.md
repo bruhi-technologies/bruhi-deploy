@@ -46,7 +46,7 @@ Certain third-party open-source libraries and services bundled with or reference
 
 ### 5. Telemetry & Data Privacy
 
-1. **License Verification:** The Software may connect periodically to licensing verification endpoints (including Lemon Squeezy and Bruhi Technologies) to verify license validity, tier limits, and subscription status. Telemetry transmitted during verification is strictly limited to license keys, station count metrics, instance metadata, and version information.
+1. **License Verification:** The Software may connect periodically to licensing verification endpoints (Bruhi Technologies Licensing Service) to verify license validity, tier limits, and subscription status. Telemetry transmitted during verification is strictly limited to license keys, station count metrics, instance metadata, and version information.
 2. **Local Data Sovereignty:** All audio recordings, media libraries, playlists, scheduling rules, and listener databases remain stored locally on Licensee's designated storage volumes and are neither transmitted to nor stored by Bruhi Technologies.
 
 ---
