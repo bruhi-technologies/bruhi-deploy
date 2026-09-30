@@ -413,11 +413,10 @@ File location: `~/bruhi-cloud/.env`
 
 | Variable                  | Required | Default        | Description                                              |
 | ------------------------- | -------- | -------------- | -------------------------------------------------------- |
-| `COMPOSE_PROFILES`        | ✅       | `proxy`        | `proxy` (Starts Caddy with auto-HTTPS)                   |
-| `IMAGE`                   | ✅       | `latest`       | Docker image tag to deploy                               |
-| `BRUHI_URL`               | ✅       | —              | Public URL e.g. `https://radio.yourdomain.com`           |
-| `DOMAIN`                  | ✅       | —              | Domain for Caddy auto-HTTPS                              |
-| `BRUHI_RP_ID`             | ✅       | —              | Hostname only (no https://) for passkeys                 |
+| `IMAGE`                   | ✅       | `latest`               | Docker image tag to deploy                               |
+| `DOMAIN`                  | ✅       | —                      | Domain for Caddy auto-HTTPS & default for public URLs    |
+| `BRUHI_URL`               | ⬜       | `https://${DOMAIN}`    | Public URL override e.g. `https://radio.yourdomain.com`  |
+| `BRUHI_RP_ID`             | ⬜       | `${DOMAIN}`            | Relying Party ID override (hostname only) for passkeys   |
 | `BRUHI_ADMIN_EMAIL`       | ⬜       | —              | Seed owner email (first boot only, if no users exist)    |
 | `BRUHI_ADMIN_PASSWORD`    | ⬜       | —              | Seed owner password (first boot only, if no users exist) |
 | `BRUHI_AUDIO_API_TOKEN`   | ⬜       | auto-generated | Internal API token between Python and Rust audio engine  |

@@ -1,10 +1,8 @@
 # bruhi Cloud — Caddyfile
 #
-# Activated by setting DOMAIN=your-domain.com and COMPOSE_PROFILES=proxy
-# in your .env file before running `docker compose up`.
-#
 # Caddy automatically provisions and renews SSL certificates from Let's
 # Encrypt — no manual certificate management required.
+# Configured via DOMAIN=your-domain.com in .env.
 
 {$DOMAIN} {
     # Live HLS Audio Delivery

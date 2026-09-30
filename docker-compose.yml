@@ -18,10 +18,10 @@ services:
       CORS_ORIGINS:          "${CORS_ORIGINS:-}"
       BRUHI_AUDIO_API_TOKEN:   "${BRUHI_AUDIO_API_TOKEN:-}"
       HLS_DIR:               "/hls"
-      # Public URL of this instance (used for passkeys, invite links, etc.)
-      BRUHI_URL:             "${BRUHI_URL}"
-      # WebAuthn / Passkeys — must match the domain users access the app on
-      BRUHI_RP_ID:           "${BRUHI_RP_ID}"
+      # Public URL of this instance (defaults to https://${DOMAIN})
+      BRUHI_URL:             "${BRUHI_URL:-https://${DOMAIN:-localhost}}"
+      # WebAuthn / Passkeys — must match the domain users access the app on (defaults to ${DOMAIN})
+      BRUHI_RP_ID:           "${BRUHI_RP_ID:-${DOMAIN:-localhost}}"
       BRUHI_RP_NAME:         "${BRUHI_RP_NAME:-brūhi Cloud}"
       # Storage paths
       BRUHI_DB:              "/app/data/bruhi.db"
@@ -42,13 +42,10 @@ services:
         max-file: "3"
 
   # ── Caddy Reverse Proxy (HTTPS / Auto-SSL) ────────────────────────────────
-  # Activated when COMPOSE_PROFILES contains "proxy".
   # Caddy auto-provisions and renews Let's Encrypt certificates.
   # Required .env settings:
   #   DOMAIN=radio.yourdomain.com
-  #   COMPOSE_PROFILES=proxy
   caddy:
-    profiles: ["proxy"]
     image: caddy:2.8-alpine
     container_name: bruhi-caddy
     depends_on:

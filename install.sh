@@ -63,14 +63,12 @@ if [ ! -f .env ]; then
     fi
   done < .env.example
 
-  profiles="proxy"
-
-  # 2. Ask for Port
+  # 1. Ask for Port
   default_port="${DEFAULT_PORT:-8000}"
   read -p "    Port for the web interface [$default_port]: " user_port
   PORT="${user_port:-$default_port}"
 
-  # 3. Ask for Domain (HTTPS reverse proxy is mandatory)
+  # 2. Ask for Domain (HTTPS reverse proxy is mandatory)
   default_domain="${DEFAULT_DOMAIN:-radio.yourdomain.com}"
   while true; do
     read -p "    Enter your domain name (e.g. radio.yourdomain.com) [$default_domain]: " user_domain
@@ -96,9 +94,7 @@ if [ ! -f .env ]; then
     elif [[ "$line" =~ = ]]; then
       key=$(echo "$line" | cut -d= -f1)
       
-      if [ "$key" = "COMPOSE_PROFILES" ]; then
-        echo "COMPOSE_PROFILES=$profiles" >> .env
-      elif [ "$key" = "PORT" ]; then
+      if [ "$key" = "PORT" ]; then
         echo "PORT=$PORT" >> .env
       elif [ "$key" = "DOMAIN" ]; then
         echo "DOMAIN=$DOMAIN" >> .env
@@ -124,11 +120,9 @@ if [ ! -f .env ]; then
 
   echo ""
   echo "✅  Configuration saved to .env:"
-  echo "    - Profiles:         $profiles"
-  echo "    - Port:             $PORT"
-  echo "    - Public URL:       $BRUHI_URL"
   echo "    - Domain:           $DOMAIN"
-  echo "    - Passkey RP ID:    $BRUHI_RP_ID"
+  echo "    - Public URL:       $BRUHI_URL"
+  echo "    - Port:             $PORT"
   echo ""
 else
   echo "ℹ️   .env already exists — skipping."

@@ -43,7 +43,7 @@ cd ~/bruhi-cloud
 docker compose up -d
 ```
 
-Open **https://your-domain.com** (or **http://<your-server-ip>:8000** if running standalone without Caddy).
+Open **https://your-domain.com**.
 
 ---
 
@@ -51,26 +51,18 @@ Open **https://your-domain.com** (or **http://<your-server-ip>:8000** if running
 
 All configuration is done via the `.env` file. Key settings:
 
-| Variable           | Description                   | Default        |
-| ------------------ | ----------------------------- | -------------- |
-| `BRUHI_URL`        | Public URL of your instance   | —              |
-| `DOMAIN`           | Domain name for HTTPS (Caddy) | —              |
-| `COMPOSE_PROFILES` | Active services — see below   | `proxy`        |
+| Variable    | Description                                          | Default             |
+| ----------- | ---------------------------------------------------- | ------------------- |
+| `DOMAIN`    | Domain name for HTTPS and public access              | —                   |
+| `PORT`      | Local host port for the web interface                | `8000`              |
+| `BRUHI_URL` | Public URL override (defaults to `https://${DOMAIN}`) | `https://${DOMAIN}` |
 
 _(Note: Storage and Email settings are configured directly within the Admin Dashboard UI.)_
 
-### Profiles
-
-| Profile   | What it does                      |
-| --------- | --------------------------------- |
-| `proxy`   | Starts Caddy with automatic HTTPS |
-
-**Example — Production HTTPS with Caddy:**
+**Example `.env`:**
 
 ```
-COMPOSE_PROFILES=proxy
 DOMAIN=radio.yourdomain.com
-BRUHI_URL=https://radio.yourdomain.com
 ```
 
 ---
