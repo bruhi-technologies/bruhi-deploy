@@ -31,12 +31,12 @@ brūhi Cloud includes client-side network capabilities to syndicate outbound aud
 
 ## 2. Audio Processing & Encoding Libraries (LGPL & MPL)
 
-### FFmpeg
-- **Project:** FFmpeg (`ffmpeg`, `libavcodec`, `libavformat`, `libavutil`, `libswresample`)
-- **Copyright:** © 2000–2026 the FFmpeg developers
+### FFmpeg / PyAV
+- **Project:** FFmpeg (`libavcodec`, `libavformat`, `libavutil`, `libswresample`) & PyAV (`av`)
+- **Copyright:** © 2000–2026 the FFmpeg developers; © Mike Boers and PyAV contributors
 - **License:** GNU Lesser General Public License version 2.1 or later (LGPLv2.1+)
-- **Upstream Source:** [https://ffmpeg.org](https://ffmpeg.org)
-- **Usage:** Used as a runtime utility for audio container inspection (`ffprobe`) and audio conversion.
+- **Upstream Source:** [https://ffmpeg.org](https://ffmpeg.org) / [https://github.com/PyAV-Org/PyAV](https://github.com/PyAV-Org/PyAV)
+- **Usage:** In Phase 1, standalone `ffmpeg` and `ffprobe` command-line binaries have been eliminated from the container distribution. PyAV C-bindings are utilized temporarily in Python for WebRTC live microphone and browser tab audio decoding (scheduled for complete elimination in Phase 2 via native Rust WebSocket/WebRTC ingest).
 
 ### LAME (mp3lame)
 - **Project:** LAME MP3 Encoder (`mp3lame-sys`, `mp3lame-encoder`)
@@ -50,7 +50,7 @@ brūhi Cloud includes client-side network capabilities to syndicate outbound aud
 - **Copyright:** © 2019–2025 Philip Deljanov
 - **License:** Mozilla Public License version 2.0 (MPL-2.0)
 - **Upstream Source:** [https://github.com/pdeljanov/Symphonia](https://github.com/pdeljanov/Symphonia)
-- **Usage:** Audio file container demuxing and decoding within the `bruhi-audio` engine.
+- **Usage:** Audio file container demuxing, decoding, and constant-memory waveform peak extraction within the `bruhi-audio` engine.
 
 ### Opus Codec (libopus)
 - **Project:** Opus Interactive Audio Codec
@@ -67,7 +67,11 @@ The `bruhi-audio` engine utilizes the following open-source crates:
 | Crate | License | Copyright / Project |
 | :--- | :--- | :--- |
 | `tokio` | MIT | © Tokio Contributors |
-| `axum` | MIT | © Tokio / Axum Contributors |
+| `axum` (0.8) | MIT | © Tokio / Axum Contributors |
+| `tower-http` | MIT | © Tokio Contributors |
+| `lofty` | MIT / Apache-2.0 | © Serial-ATA and Lofty Contributors |
+| `ureq` | MIT / Apache-2.0 | © Martin Algesten and ureq contributors |
+| `symphonia` | MPL-2.0 | © Philip Deljanov |
 | `serde`, `serde_json` | MIT / Apache-2.0 | © Erick Tryzelaar, David Tolnay |
 | `clap` | MIT / Apache-2.0 | © Clap Contributors |
 | `toml` | MIT / Apache-2.0 | © Alex Crichton, TOML Contributors |
@@ -101,6 +105,8 @@ The brūhi Cloud backend server utilizes the following open-source packages:
 | `requests` | Apache-2.0 | © Kenneth Reitz / Python Software Foundation |
 | `httpx`, `httpx2` | BSD-3-Clause / MIT | © Encode OSS Ltd. |
 | `numpy` | BSD-3-Clause | © NumPy Developers |
+| `av` (PyAV) | LGPLv2.1+ | © Mike Boers and PyAV contributors |
+| `mutagen` | GPLv2+ | © Joe Wreschnig, Michael Urman, Lukas Lalinsky, Christoph Reiter |
 | `aiortc` | BSD-3-Clause | © Jeremy Lainé |
 | `boto3` | Apache-2.0 | © Amazon.com, Inc. or its affiliates |
 | `psutil` | BSD-3-Clause | © Jay Loden, Dave Daeschler, Giampaolo Rodola |
